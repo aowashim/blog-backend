@@ -6,57 +6,16 @@ const jwt = require('jsonwebtoken')
 
 require('dotenv').config()
 
-router.get('/', (req, res) => {
-  //console.log(req.headers)
-
-  const myConnection = mysql.createConnection(process.env.DB)
-
-  myConnection.connect(err => {
-    if (err) {
-      //console.log(err.message)
-      return res.status(500).json({ msg: 'Server error.' })
-    } else {
-      console.log('Connected to the database...')
-    }
-  })
-
-  myConnection.query(
-    `select * from userinfo where email=?`,
-    ['aowashi@gm.co'],
-    async (err, results) => {
-      if (err) {
-        res.status(500).json({ msg: 'Server error.' })
-      } else {
-        //const isMatch = await bcrypt.compare('password1', results[0].password)
-
-        // if (!isMatch) {
-        //   return res.status(400).json({ msg: 'Invalid credentials.' })
-        // } else {
-        res.status(200).json(results[0])
-        //}
-      }
-    }
-  )
-
-  myConnection.end()
-})
-
+// register user (signup)
 router.post('/signup', async (req, res) => {
   const data = req.body
-
-  //console.log(data)
 
   const hashedPwd = await bcrypt.hash(data.pwrd, 10)
 
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) {
-      //console.log(err.message)
-      return res.status(500).json({ msg: 'Server error.' })
-    } else {
-      console.log('Connected to the database...')
-    }
+    if (err) return res.status(500).json({ msg: 'Server error.' })
   })
 
   myConnection.query(
@@ -64,10 +23,56 @@ router.post('/signup', async (req, res) => {
       '${data.city}', '${data.state}', '${hashedPwd}')`,
     (err, results) => {
       if (err) {
-        console.log(err.message)
         res.status(500).json({ msg: 'Server error.' })
       } else {
-        res.status(200).json({ msg: 'Data inserted.' })
+        res.status(200).json({ msg: 'SignUp successful' })
+      }
+    }
+  )
+
+  myConnection.end()
+})
+
+// Sign In and get token (signin)
+router.post('/signin', async (req, res) => {
+  const data = req.body
+
+  const myConnection = mysql.createConnection(process.env.DB)
+
+  myConnection.connect(err => {
+    if (err) return res.status(500).json({ msg: 'Server error.' })
+  })
+
+  myConnection.query(
+    `select uid, pwrd from userinfo where email=?`,
+    [`${data.email}`],
+    async (err, results) => {
+      if (err) {
+        res.status(500).json({ msg: 'Server error.' })
+      } else {
+        if (results.length) {
+          const isMatch = await bcrypt.compare(data.pwrd, results[0].pwrd)
+
+          if (!isMatch) {
+            return res.status(400).json({ msg: 'Invalid credentials.' })
+          }
+
+          jwt.sign(
+            {
+              uid: results[0].uid,
+            },
+            process.env.JWT_SECRET,
+            (err, token) => {
+              if (err) {
+                res.status(500).json({ msg: 'Server error.' })
+              } else {
+                res.status(200).json({ token })
+              }
+            }
+          )
+        } else {
+          return res.status(400).json({ msg: 'Invalid credentials.' })
+        }
       }
     }
   )
