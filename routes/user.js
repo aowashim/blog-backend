@@ -25,12 +25,37 @@ router.post('/signup', async (req, res) => {
       if (err) {
         res.status(500).json({ msg: 'Server error.' })
       } else {
-        res.status(200).json({ msg: 'SignUp successful' })
+        myConnection.query(
+          `select uid, pwrd from userinfo where email=?`,
+          [`${data.email}`],
+          async (err, results) => {
+            if (err) {
+              res.status(500).json({ msg: 'Server error.' })
+            } else {
+              if (results.length) {
+                jwt.sign(
+                  {
+                    uid: results[0].uid,
+                  },
+                  process.env.JWT_SECRET,
+                  (err, token) => {
+                    if (err) {
+                      res.status(500).json({ msg: 'Server error.' })
+                    } else {
+                      res.status(200).json({ token })
+                    }
+                  }
+                )
+              } else {
+                return res.status(400).json({ msg: 'Invalid credentials.' })
+              }
+            }
+            myConnection.end()
+          }
+        )
       }
     }
   )
-
-  myConnection.end()
 })
 
 // Sign In and get token (signin)
