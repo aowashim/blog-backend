@@ -19,8 +19,8 @@ router.post('/signup', async (req, res) => {
   })
 
   myConnection.query(
-    `insert into userinfo(email, name, city, state, pwrd) values('${data.email}', '${data.name}',
-      '${data.city}', '${data.state}', '${hashedPwd}')`,
+    `insert into userinfo(email, name, city, about, dp, pwrd) values('${data.email}', '${data.name}',
+      '${data.city}', '${data.about}', '${data.dp}', '${hashedPwd}')`,
     (err, results) => {
       if (err) {
         res.status(500).json({ msg: 'Server error.' })
