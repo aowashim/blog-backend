@@ -1,13 +1,12 @@
 const express = require('express')
 const router = express.Router()
 const mysql = require('mysql')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
+const auth = require('../middleware/auth')
 
 require('dotenv').config()
 
 // Check whether the user is available
-router.get('/check', (req, res) => {
+router.get('/all', (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
@@ -15,16 +14,17 @@ router.get('/check', (req, res) => {
   })
 
   myConnection.query(
-    `select userName from userinfo where userName=?`,
-    [`${req.query.un}`],
+    `select pid, userName, name, dp, title, description, location, pdate, image from posts
+      inner join userinfo on uname=userName where pid<? order by pid desc limit 10`,
+    [`${req.query.id}`],
     (err, results) => {
       if (err) {
         res.status(500).json({ msg: 'Server error.' })
       } else {
         if (results.length) {
-          res.status(400).json({ msg: 'Username already taken.' })
+          res.status(200).json(results)
         } else {
-          res.status(200).json({ msg: 'Username available.' })
+          res.status(400).json({ msg: 'No posts available.' })
         }
       }
     }
@@ -33,11 +33,9 @@ router.get('/check', (req, res) => {
   myConnection.end()
 })
 
-// register user (signup)
-router.post('/signup', async (req, res) => {
+// create a post
+router.post('', auth, (req, res) => {
   const data = req.body
-
-  const hashedPwd = await bcrypt.hash(data.pwrd, 10)
 
   const myConnection = mysql.createConnection(process.env.DB)
 
@@ -46,25 +44,13 @@ router.post('/signup', async (req, res) => {
   })
 
   myConnection.query(
-    `insert into userinfo(userName, name, city, about, dp, pwrd) values('${data.userName}', '${data.name}',
-      '${data.city}', '${data.about}', '${data.dp}', '${hashedPwd}')`,
+    `insert into posts(uname, title, description, location, ip, pdate) values('${req.userName}', '${data.title}',
+        '${data.description}', '${data.location}', '${data.ip}', '${data.pdate}')`,
     (err, results) => {
       if (err) {
         res.status(500).json({ msg: 'Server error.' })
       } else {
-        jwt.sign(
-          {
-            userName: data.userName,
-          },
-          process.env.JWT_SECRET,
-          (err, token) => {
-            if (err) {
-              res.status(500).json({ msg: 'Server error.' })
-            } else {
-              res.status(200).json({ token })
-            }
-          }
-        )
+        res.status(200).json({ msg: 'Post created.' })
       }
     }
   )
@@ -73,7 +59,7 @@ router.post('/signup', async (req, res) => {
 })
 
 // Sign In and get token (signin)
-router.post('/signin', (req, res) => {
+router.post('/signin', async (req, res) => {
   const data = req.body
 
   const myConnection = mysql.createConnection(process.env.DB)

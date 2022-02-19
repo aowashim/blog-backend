@@ -14,8 +14,8 @@ router.get('/', auth, (req, res) => {
   })
 
   myConnection.query(
-    `select uid, email, name, city, state, about, dp from userinfo where uid=?`,
-    [`${req.uid}`],
+    `select userName, email, name, city, state, about, dp from userinfo where userName=?`,
+    [`${req.userName}`],
     async (err, results) => {
       if (err) {
         res.status(500).json({ msg: 'Server error.' })
