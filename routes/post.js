@@ -14,11 +14,13 @@ router.get('/all', (req, res) => {
   })
 
   myConnection.query(
-    `select pid, userName, name, dp, title, description, location, pdate, image from posts
-      inner join userinfo on uname=userName where pid<? order by pid desc limit 10`,
+    `select p.pid, userName, name, dp, title, description, location, pdate, image, b.pid bm from posts p
+      inner join userinfo u on p.uname=userName left join bookmarks b on b.uname=userName and p.pid=b.pid
+      where p.pid<? order by p.pid desc limit 10`,
     [`${req.query.id}`],
     (err, results) => {
       if (err) {
+        console.log(err.message)
         res.status(500).json({ msg: 'Server error.' })
       } else {
         if (results.length) {
@@ -44,8 +46,8 @@ router.post('', auth, (req, res) => {
   })
 
   myConnection.query(
-    `insert into posts(uname, title, description, location, ip, pdate) values('${req.userName}', '${data.title}',
-        '${data.description}', '${data.location}', '${data.ip}', '${data.pdate}')`,
+    `insert into posts(uname, title, description, location, ip, pdate, image) values('${req.userName}', '${data.title}',
+        '${data.description}', '${data.location}', '${data.ip}', '${data.pdate}', '${data.image}')`,
     (err, results) => {
       if (err) {
         res.status(500).json({ msg: 'Server error.' })
