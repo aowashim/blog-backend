@@ -5,7 +5,37 @@ const auth = require('../middleware/auth')
 
 require('dotenv').config()
 
-// Check whether the user is available
+// get all posts auth
+router.get('/auth', auth, (req, res) => {
+  const myConnection = mysql.createConnection(process.env.DB)
+
+  myConnection.connect(err => {
+    if (err) return res.status(500).json({ msg: 'Server error.' })
+  })
+
+  myConnection.query(
+    `select p.pid, userName, name, dp, title, description, location, pdate, image, b.pid bm from posts p
+      inner join userinfo u on p.uname=userName left join bookmarks b on b.uname=? and p.pid=b.pid
+      where p.pid<? order by p.pid desc limit 10`,
+    [`${req.userName}`, `${req.query.id}`],
+    (err, results) => {
+      if (err) {
+        console.log(err.message)
+        res.status(500).json({ msg: 'Server error.' })
+      } else {
+        if (results.length) {
+          res.status(200).json(results)
+        } else {
+          res.status(400).json({ msg: 'No posts available.' })
+        }
+      }
+    }
+  )
+
+  myConnection.end()
+})
+
+// get all posts
 router.get('/all', (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
@@ -15,7 +45,7 @@ router.get('/all', (req, res) => {
 
   myConnection.query(
     `select p.pid, userName, name, dp, title, description, location, pdate, image, b.pid bm from posts p
-      inner join userinfo u on p.uname=userName left join bookmarks b on b.uname=userName and p.pid=b.pid
+      inner join userinfo u on p.uname=userName left join bookmarks b on b.uname='' and p.pid=b.pid
       where p.pid<? order by p.pid desc limit 10`,
     [`${req.query.id}`],
     (err, results) => {
