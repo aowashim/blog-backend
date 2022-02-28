@@ -14,7 +14,7 @@ router.get('/', auth, (req, res) => {
   })
 
   myConnection.query(
-    `select userName, email, name, city, state, about, dp from userinfo where userName=?`,
+    `select userName, uid, name, city, about, dp from userinfo where userName=?`,
     [`${req.userName}`],
     async (err, results) => {
       if (err) {
