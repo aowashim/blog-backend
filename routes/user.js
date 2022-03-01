@@ -50,6 +50,7 @@ router.post('/signup', async (req, res) => {
       '${data.city}', '${data.about}', '${data.dp}', '${hashedPwd}')`,
     (err, results) => {
       if (err) {
+        console.log(err.message)
         res.status(500).json({ msg: 'Server error.' })
       } else {
         jwt.sign(
@@ -61,7 +62,7 @@ router.post('/signup', async (req, res) => {
             if (err) {
               res.status(500).json({ msg: 'Server error.' })
             } else {
-              res.status(200).json({ token })
+              res.status(200).json({ token, name: data.name })
             }
           }
         )
@@ -83,7 +84,7 @@ router.post('/signin', (req, res) => {
   })
 
   myConnection.query(
-    `select pwrd from userinfo where userName=?`,
+    `select name, pwrd from userinfo where userName=?`,
     [`${data.userName}`],
     async (err, results) => {
       if (err) {
@@ -104,7 +105,7 @@ router.post('/signin', (req, res) => {
                 if (err) {
                   res.status(500).json({ msg: 'Server error.' })
                 } else {
-                  res.status(200).json({ token })
+                  res.status(200).json({ token, name: results[0].name })
                 }
               }
             )
