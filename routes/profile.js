@@ -5,7 +5,7 @@ const auth = require('../middleware/auth')
 
 require('dotenv').config()
 
-// get user info
+// get user info (own)
 router.get('/', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
@@ -16,6 +16,33 @@ router.get('/', auth, (req, res) => {
   myConnection.query(
     `select userName, uid, name, city, about, dp from userinfo where userName=?`,
     [`${req.userName}`],
+    async (err, results) => {
+      if (err) {
+        res.status(500).json({ msg: 'Server error.' })
+      } else {
+        if (results.length) {
+          res.status(200).json(results[0])
+        } else {
+          res.status(400).json({ msg: 'No records found.' })
+        }
+      }
+    }
+  )
+
+  myConnection.end()
+})
+
+// get user info (others)
+router.get('/view', (req, res) => {
+  const myConnection = mysql.createConnection(process.env.DB)
+
+  myConnection.connect(err => {
+    if (err) return res.status(500).json({ msg: 'Server error.' })
+  })
+
+  myConnection.query(
+    `select userName, uid, name, city, about, dp from userinfo where userName=?`,
+    [[`${req.query.id}`]],
     async (err, results) => {
       if (err) {
         res.status(500).json({ msg: 'Server error.' })

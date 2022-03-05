@@ -84,7 +84,7 @@ router.post('/signin', (req, res) => {
   })
 
   myConnection.query(
-    `select name, pwrd from userinfo where userName=?`,
+    `select name, pwrd, userName from userinfo where userName=?`,
     [`${data.userName}`],
     async (err, results) => {
       if (err) {
@@ -105,7 +105,11 @@ router.post('/signin', (req, res) => {
                 if (err) {
                   res.status(500).json({ msg: 'Server error.' })
                 } else {
-                  res.status(200).json({ token, name: results[0].name })
+                  res.status(200).json({
+                    token,
+                    name: results[0].name,
+                    uname: results[0].userName,
+                  })
                 }
               }
             )
