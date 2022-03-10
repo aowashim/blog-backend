@@ -90,10 +90,8 @@ router.post('', auth, (req, res) => {
   myConnection.end()
 })
 
-// Sign In and get token (signin)
-router.post('/signin', async (req, res) => {
-  const data = req.body
-
+// get user posts auth
+router.get('/user/auth', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
@@ -101,34 +99,19 @@ router.post('/signin', async (req, res) => {
   })
 
   myConnection.query(
-    `select pwrd from userinfo where userName=?`,
-    [`${data.userName}`],
-    async (err, results) => {
+    `select p.pid, userName, name, dp, title, description, location, pdate, image, b.pid bm from posts p
+      inner join userinfo u on p.uname=userName and userName=? left join bookmarks b on b.uname=? and
+      p.pid=b.pid where p.pid<? order by p.pid desc limit 10`,
+    [`${req.query.un}`, `${req.userName}`, `${req.query.id}`],
+    (err, results) => {
       if (err) {
+        console.log(err.message)
         res.status(500).json({ msg: 'Server error.' })
       } else {
         if (results.length) {
-          const isMatch = await bcrypt.compare(data.pwrd, results[0].pwrd)
-
-          if (!isMatch) {
-            res.status(400).json({ msg: 'Invalid credentials.' })
-          } else {
-            jwt.sign(
-              {
-                userName: data.userName,
-              },
-              process.env.JWT_SECRET,
-              (err, token) => {
-                if (err) {
-                  res.status(500).json({ msg: 'Server error.' })
-                } else {
-                  res.status(200).json({ token })
-                }
-              }
-            )
-          }
+          res.status(200).json(results)
         } else {
-          res.status(400).json({ msg: 'Invalid credentials.' })
+          res.status(400).json({ msg: 'No posts available.' })
         }
       }
     }
