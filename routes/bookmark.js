@@ -6,7 +6,7 @@ const auth = require('../middleware/auth')
 require('dotenv').config()
 
 // get all the bookmarks of a user
-router.get('/', auth, (req, res) => {
+router.get('', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
@@ -14,8 +14,8 @@ router.get('/', auth, (req, res) => {
   })
 
   myConnection.query(
-    `select * from bookmarks where uname=?`,
-    [`${req.userName}`],
+    `select * from bookmarks where uname=? and bid<? order by bid desc limit 10`,
+    [`${req.userName}`, `${req.query.id}`],
     (err, results) => {
       if (err) {
         res.status(500).json({ msg: 'Server error.' })
@@ -41,9 +41,10 @@ router.post('/', auth, (req, res) => {
   })
 
   myConnection.query(
-    `insert into bookmarks values('${req.userName}', ${req.body.pid})`,
+    `insert into bookmarks(uname, pid, b_title) values('${req.userName}', ${req.body.pid}, '${req.body.title}')`,
     (err, results) => {
       if (err) {
+        console.log(err.message)
         res.status(500).json({ msg: 'Server error.' })
       } else {
         res.status(200).json({ msg: 'Bookmark created.' })

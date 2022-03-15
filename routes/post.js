@@ -50,7 +50,6 @@ router.get('/all', (req, res) => {
     [`${req.query.id}`],
     (err, results) => {
       if (err) {
-        console.log(err.message)
         res.status(500).json({ msg: 'Server error.' })
       } else {
         if (results.length) {
@@ -105,7 +104,63 @@ router.get('/user/auth', auth, (req, res) => {
     [`${req.query.un}`, `${req.userName}`, `${req.query.id}`],
     (err, results) => {
       if (err) {
-        console.log(err.message)
+        res.status(500).json({ msg: 'Server error.' })
+      } else {
+        if (results.length) {
+          res.status(200).json(results)
+        } else {
+          res.status(400).json({ msg: 'No posts available.' })
+        }
+      }
+    }
+  )
+
+  myConnection.end()
+})
+
+// get user posts
+router.get('/user/', (req, res) => {
+  const myConnection = mysql.createConnection(process.env.DB)
+
+  myConnection.connect(err => {
+    if (err) return res.status(500).json({ msg: 'Server error.' })
+  })
+
+  myConnection.query(
+    `select p.pid, userName, name, dp, title, description, location, pdate, image, b.pid bm from posts p
+      inner join userinfo u on p.uname=userName and userName=? left join bookmarks b on b.uname='' and
+      p.pid=b.pid where p.pid<? order by p.pid desc limit 10`,
+    [`${req.query.un}`, `${req.query.id}`],
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ msg: 'Server error.' })
+      } else {
+        if (results.length) {
+          res.status(200).json(results)
+        } else {
+          res.status(400).json({ msg: 'No posts available.' })
+        }
+      }
+    }
+  )
+
+  myConnection.end()
+})
+
+// get user post auth
+router.get('/auth/one', auth, (req, res) => {
+  const myConnection = mysql.createConnection(process.env.DB)
+
+  myConnection.connect(err => {
+    if (err) return res.status(500).json({ msg: 'Server error.' })
+  })
+
+  myConnection.query(
+    `select p.pid, userName, name, dp, title, description, location, pdate, image, b.pid bm from posts p
+      inner join userinfo u on p.uname=userName and p.pid=? left join bookmarks b on b.uname=? and p.pid=b.pid`,
+    [`${req.query.id}`, `${req.userName}`],
+    (err, results) => {
+      if (err) {
         res.status(500).json({ msg: 'Server error.' })
       } else {
         if (results.length) {
