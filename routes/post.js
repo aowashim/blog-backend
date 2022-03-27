@@ -147,7 +147,7 @@ router.get('/user/', (req, res) => {
   myConnection.end()
 })
 
-// get user post auth
+// get user post auth (single post)
 router.get('/auth/one', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
