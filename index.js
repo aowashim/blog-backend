@@ -13,7 +13,7 @@ app.use('/user', require('./routes/user'))
 app.use('/profile', require('./routes/profile'))
 app.use('/post', require('./routes/post'))
 app.use('/bookmark', require('./routes/bookmark'))
-app.use('/follower', require('./routes/follower'))
+app.use('/f', require('./routes/following'))
 
 const PORT = process.env.PORT || 5000
 
