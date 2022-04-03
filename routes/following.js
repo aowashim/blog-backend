@@ -66,41 +66,35 @@ router.post('/add', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
-    `insert into following(uname, fname) values('${req.userName}', '${req.query.fn}')`,
+    `insert into following(uname, fname) values(?, ?)`,
+    [`${req.userName}`, `${req.body.fn}`],
     (err, results) => {
-      if (err) {
-        console.log(err.message)
-        res.status(500).json({ msg: 'Server error.' })
-      } else {
-        res.status(200).json({ msg: 'Follower added.' })
-      }
+      if (err) return res.status(500).json({ msg: err.message })
+      res.status(200).json({ msg: 'Follower added.' })
     }
   )
 
   myConnection.end()
 })
 
-// remove a bookmark
-router.delete('/', auth, (req, res) => {
+// remove following
+router.delete('/remove', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
-    'delete from bookmarks where uname=? and pid=?',
-    [`${req.userName}`, `${req.body.pid}`],
+    'delete from following where uname=? and fname=?',
+    [`${req.userName}`, `${req.body.fn}`],
     (err, results) => {
-      if (err) {
-        res.status(500).json({ msg: 'Server error.' })
-      } else {
-        res.status(200).json({ msg: 'Bookmark removed.' })
-      }
+      if (err) return res.status(500).json({ msg: err.message })
+      res.status(200).json({ msg: 'Following removed.' })
     }
   )
 
