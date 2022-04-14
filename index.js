@@ -14,6 +14,7 @@ app.use('/profile', require('./routes/profile'))
 app.use('/post', require('./routes/post'))
 app.use('/bookmark', require('./routes/bookmark'))
 app.use('/f', require('./routes/following'))
+app.use('/s', require('./routes/search'))
 
 const PORT = process.env.PORT || 5000
 

@@ -15,9 +15,9 @@ router.get('/auth', auth, (req, res) => {
 
   myConnection.query(
     `select p.pid, userName, name, dp, title, description, location, pdate, image, b.pid bm from posts p
-      inner join userinfo u on p.uname=userName left join bookmarks b on b.uname=? and p.pid=b.pid
-      where p.pid<? order by p.pid desc limit 10`,
-    [`${req.userName}`, `${req.query.id}`],
+      inner join userinfo u on p.uname=userName and p.pid<? left join bookmarks b on b.uname=? and p.pid=b.pid
+      order by p.pid desc limit 10`,
+    [`${req.query.id}`, `${req.userName}`],
     (err, results) => {
       if (err) {
         res.status(500).json({ msg: 'Server error.' })
@@ -34,36 +34,7 @@ router.get('/auth', auth, (req, res) => {
   myConnection.end()
 })
 
-// get all posts auth from following
-router.get('/auth/following', auth, (req, res) => {
-  const myConnection = mysql.createConnection(process.env.DB)
-
-  myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
-  })
-
-  myConnection.query(
-    `select p.pid, userName, name, dp, title, description, location, pdate, image, b.pid bm from posts p
-      inner join userinfo u on p.uname=userName and userName in (select fname from following where uname=?)
-      left join bookmarks b on b.uname=? and p.pid=b.pid where p.pid<? order by p.pid desc limit 10`,
-    [`${req.userName}`, `${req.userName}`, `${req.query.id}`],
-    (err, results) => {
-      if (err) {
-        res.status(500).json({ msg: err.message })
-      } else {
-        if (results.length) {
-          res.status(200).json(results)
-        } else {
-          res.status(400).json({ msg: 'No posts available.' })
-        }
-      }
-    }
-  )
-
-  myConnection.end()
-})
-
-// get all posts
+// get all posts from all users (public)
 router.get('/all', (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
@@ -73,8 +44,8 @@ router.get('/all', (req, res) => {
 
   myConnection.query(
     `select p.pid, userName, name, dp, title, description, location, pdate, image, b.pid bm from posts p
-      inner join userinfo u on p.uname=userName left join bookmarks b on b.uname='' and p.pid=b.pid
-      where p.pid<? order by p.pid desc limit 10`,
+      inner join userinfo u on p.uname=userName and p.pid<? left join bookmarks b on b.uname='' and p.pid=b.pid
+      order by p.pid desc limit 10`,
     [`${req.query.id}`],
     (err, results) => {
       if (err) {
@@ -92,10 +63,8 @@ router.get('/all', (req, res) => {
   myConnection.end()
 })
 
-// create a post
-router.post('', auth, (req, res) => {
-  const data = req.body
-
+// get all posts auth from following (auth)
+router.get('/auth/following', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
@@ -103,13 +72,19 @@ router.post('', auth, (req, res) => {
   })
 
   myConnection.query(
-    `insert into posts(uname, title, description, location, ip, pdate, image) values('${req.userName}', '${data.title}',
-        '${data.description}', '${data.location}', '${data.ip}', '${data.pdate}', '${data.image}')`,
+    `select p.pid, userName, name, dp, title, description, location, pdate, image, b.pid bm from posts p
+      inner join userinfo u on p.uname=userName and p.pid<? and userName in (select fname from following where uname=?)
+      left join bookmarks b on b.uname=? and p.pid=b.pid order by p.pid desc limit 10`,
+    [`${req.query.id}`, `${req.userName}`, `${req.userName}`],
     (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
-        res.status(200).json({ msg: 'Post created.' })
+        if (results.length) {
+          res.status(200).json(results)
+        } else {
+          res.status(400).json({ msg: 'No posts available.' })
+        }
       }
     }
   )
@@ -127,9 +102,9 @@ router.get('/user/auth', auth, (req, res) => {
 
   myConnection.query(
     `select p.pid, userName, name, dp, title, description, location, pdate, image, b.pid bm from posts p
-      inner join userinfo u on p.uname=userName and userName=? left join bookmarks b on b.uname=? and
-      p.pid=b.pid where p.pid<? order by p.pid desc limit 10`,
-    [`${req.query.un}`, `${req.userName}`, `${req.query.id}`],
+      inner join userinfo u on p.uname=userName and userName=? and p.pid<? left join bookmarks b on b.uname=? and
+      p.pid=b.pid order by p.pid desc limit 10`,
+    [`${req.query.un}`, `${req.query.id}`, `${req.userName}`],
     (err, results) => {
       if (err) {
         res.status(500).json({ msg: 'Server error.' })
@@ -146,8 +121,9 @@ router.get('/user/auth', auth, (req, res) => {
   myConnection.end()
 })
 
-// get user posts
+// get user posts (public)
 router.get('/user/', (req, res) => {
+  console.log('444')
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
@@ -156,8 +132,8 @@ router.get('/user/', (req, res) => {
 
   myConnection.query(
     `select p.pid, userName, name, dp, title, description, location, pdate, image, b.pid bm from posts p
-      inner join userinfo u on p.uname=userName and userName=? left join bookmarks b on b.uname='' and
-      p.pid=b.pid where p.pid<? order by p.pid desc limit 10`,
+      inner join userinfo u on p.uname=userName and userName=? and p.pid<? left join bookmarks b on b.uname='' and
+      p.pid=b.pid order by p.pid desc limit 10`,
     [`${req.query.un}`, `${req.query.id}`],
     (err, results) => {
       if (err) {
@@ -196,6 +172,31 @@ router.get('/auth/one', auth, (req, res) => {
         } else {
           res.status(400).json({ msg: 'No posts available.' })
         }
+      }
+    }
+  )
+
+  myConnection.end()
+})
+
+// create a post
+router.post('', auth, (req, res) => {
+  const data = req.body
+
+  const myConnection = mysql.createConnection(process.env.DB)
+
+  myConnection.connect(err => {
+    if (err) return res.status(500).json({ msg: 'Server error.' })
+  })
+
+  myConnection.query(
+    `insert into posts(uname, title, description, location, ip, pdate, image) values('${req.userName}', '${data.title}',
+        '${data.description}', '${data.location}', '${data.ip}', '${data.pdate}', '${data.image}')`,
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ msg: 'Server error.' })
+      } else {
+        res.status(200).json({ msg: 'Post created.' })
       }
     }
   )
