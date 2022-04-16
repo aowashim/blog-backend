@@ -15,9 +15,9 @@ router.get('/post', (req, res) => {
 
   myConnection.query(
     `select p.pid, userName, name, dp, title, description, location, pdate, image, b.pid bm from posts p
-      inner join userinfo u on p.uname=userName and title regexp '^m' and p.pid<? left join bookmarks b
+      inner join userinfo u on p.uname=userName and title regexp ? and p.pid<? left join bookmarks b
       on b.uname='' and p.pid=b.pid order by p.pid desc limit 10`,
-    [`${req.query.pid}`],
+    [`${req.query.key}`, `${req.query.pid}`],
     (err, results) => {
       if (err) {
         res.status(500).json({ msg: err.message })
