@@ -5,7 +5,7 @@ const auth = require('../middleware/auth')
 
 require('dotenv').config()
 
-// search post
+// search post by title (public)
 router.get('/post', (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
@@ -34,37 +34,32 @@ router.get('/post', (req, res) => {
   myConnection.end()
 })
 
-// get user info (others)
-router.get('/view', (req, res) => {
+// search people by name
+router.get('/users', (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
-    `select userName, uid, name, city, about, dp from userinfo where userName=?`,
-    [`${req.query.id}`],
-    async (err, results) => {
-      if (err) return res.status(500).json({ msg: err.message })
-
-      if (!results.length)
-        return res.status(400).json({ msg: 'No records found.' })
-
-      // checking follower
-      const data = { ...results[0], fname: false }
-      myConnection.query(
-        `select fname from following where uname=? and fname=?`,
-        [`${req.query.un}`, `${req.query.id}`],
-        async (err, results) => {
-          if (err) return res.status(500).json({ msg: err.message })
-
-          data.fname = results[0]?.fname ? true : false
-          res.status(200).json(data)
+    `select userName, uid as id, name, dp from userinfo where name regexp ? and uid<?
+      order by uid desc limit 10`,
+    [`${req.query.key}`, `${req.query.uid}`],
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ msg: err.message })
+      } else {
+        if (results.length) {
+          res.status(200).json(results)
+        } else {
+          res.status(400).json({ msg: 'No users available.' })
         }
-      )
+      }
     }
   )
+
+  myConnection.end()
 })
 
 module.exports = router
