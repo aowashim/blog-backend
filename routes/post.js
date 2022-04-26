@@ -123,7 +123,6 @@ router.get('/user/auth', auth, (req, res) => {
 
 // get user posts (public)
 router.get('/user/', (req, res) => {
-  console.log('444')
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
