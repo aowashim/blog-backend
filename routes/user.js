@@ -62,7 +62,9 @@ router.post('/signup', async (req, res) => {
             if (err) {
               res.status(500).json({ msg: 'Server error.' })
             } else {
-              res.status(200).json({ token, name: data.name })
+              res
+                .status(200)
+                .json({ token, name: data.name, uname: data.userName })
             }
           }
         )

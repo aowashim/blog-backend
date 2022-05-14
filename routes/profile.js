@@ -10,7 +10,7 @@ router.get('/', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -18,7 +18,7 @@ router.get('/', auth, (req, res) => {
     [`${req.userName}`],
     async (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         if (results.length) {
           res.status(200).json(results[0])
@@ -37,7 +37,7 @@ router.get('/view', (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -63,6 +63,37 @@ router.get('/view', (req, res) => {
       )
     }
   )
+})
+
+// Edit profile (private)
+router.put('/', auth, (req, res) => {
+  const myConnection = mysql.createConnection(process.env.DB)
+
+  const data = req.body
+
+  myConnection.connect(err => {
+    if (err) return res.status(500).json({ msg: err.message })
+  })
+
+  myConnection.query(
+    `update userinfo set name=?, city=?, about=?, dp=? where userName=?`,
+    [
+      `${data.name}`,
+      `${data.city}`,
+      `${data.about}`,
+      `${data.dp}`,
+      `${req.userName}`,
+    ],
+    async (err, results) => {
+      if (err) {
+        res.status(500).json({ msg: err.message })
+      } else {
+        res.status(200).json({ name: data.name, uname: req.userName })
+      }
+    }
+  )
+
+  myConnection.end()
 })
 
 module.exports = router
