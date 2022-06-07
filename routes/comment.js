@@ -14,7 +14,8 @@ router.get('', (req, res) => {
   })
 
   myConnection.query(
-    `select * from comments where pid=? and cid<? order by cid desc limit 10`,
+    `select u.name, u.dp, c.uname, c.cid, c.content from comments c inner join userinfo u
+      on c.pid=? and c.uname = u.userName and c.cid<? order by c.cid desc limit 10`,
     [req.query.pid, req.query.cid],
     (err, results) => {
       if (err) {
@@ -43,8 +44,8 @@ router.post('', auth, (req, res) => {
   })
 
   myConnection.query(
-    `insert into comments(uname, pid, content, cdate, name) values(?, ?, ?, ?, ?)`,
-    [req.userName, data.pid, data.content, data.cdate, data.name],
+    `insert into comments(uname, pid, content, cdate) values(?, ?, ?, ?)`,
+    [req.userName, data.pid, data.content, data.cdate],
     (err, results) => {
       if (err) {
         res.status(500).json({ msg: err.message })
