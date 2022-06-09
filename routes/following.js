@@ -10,7 +10,7 @@ router.get('/following', (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -19,7 +19,7 @@ router.get('/following', (req, res) => {
     [`${req.query.un}`, `${req.query.id}`],
     (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         if (results.length) {
           res.status(200).json(results)
@@ -38,7 +38,7 @@ router.get('/follower', (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -47,7 +47,7 @@ router.get('/follower', (req, res) => {
     [`${req.query.un}`, `${req.query.id}`],
     (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         if (results.length) {
           res.status(200).json(results)

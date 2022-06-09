@@ -11,7 +11,7 @@ router.get('/', (req, res) => {
   myConnection.connect(err => {
     if (err) {
       //console.log(err.message)
-      return res.status(500).json({ msg: 'Server error.' })
+      return res.status(500).json({ msg: err.message })
     } else {
       console.log('Connected to the database...')
     }
@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
     `select password from auth where email='ahjkh@g.vo'`,
     async (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         const isMatch = await bcrypt.compare('password1', results[0].password)
 
@@ -45,7 +45,7 @@ router.post('/', async (req, res) => {
   myConnection.connect(err => {
     if (err) {
       //console.log(err.message)
-      return res.status(500).json({ msg: 'Server error.' })
+      return res.status(500).json({ msg: err.message })
     } else {
       console.log('Connected to the database...')
     }
@@ -56,7 +56,7 @@ router.post('/', async (req, res) => {
     (err, results) => {
       if (err) {
         console.log(err.message)
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         res.status(200).json(results)
       }

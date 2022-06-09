@@ -10,7 +10,7 @@ router.get('/auth', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -20,7 +20,7 @@ router.get('/auth', auth, (req, res) => {
     [`${req.query.id}`, `${req.userName}`],
     (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         if (results.length) {
           res.status(200).json(results)
@@ -39,7 +39,7 @@ router.get('/all', (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -49,7 +49,7 @@ router.get('/all', (req, res) => {
     [`${req.query.id}`],
     (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         if (results.length) {
           res.status(200).json(results)
@@ -68,7 +68,7 @@ router.get('/auth/following', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -97,7 +97,7 @@ router.get('/user/auth', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -107,7 +107,7 @@ router.get('/user/auth', auth, (req, res) => {
     [`${req.query.un}`, `${req.query.id}`, `${req.userName}`],
     (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         if (results.length) {
           res.status(200).json(results)
@@ -126,7 +126,7 @@ router.get('/user/', (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -136,7 +136,7 @@ router.get('/user/', (req, res) => {
     [`${req.query.un}`, `${req.query.id}`],
     (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         if (results.length) {
           res.status(200).json(results)
@@ -155,7 +155,7 @@ router.get('/auth/one', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -164,7 +164,7 @@ router.get('/auth/one', auth, (req, res) => {
     [`${req.query.id}`, `${req.userName}`],
     (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         if (results.length) {
           res.status(200).json(results)
@@ -185,7 +185,7 @@ router.post('', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -193,7 +193,7 @@ router.post('', auth, (req, res) => {
         '${data.description}', '${data.pdate}', '${data.image}', '${data.url}', '${data.catg}')`,
     (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         res.status(200).json({ msg: 'Post created.' })
       }

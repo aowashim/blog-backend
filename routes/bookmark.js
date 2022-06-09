@@ -10,7 +10,7 @@ router.get('', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -18,7 +18,7 @@ router.get('', auth, (req, res) => {
     [`${req.userName}`, `${req.query.id}`],
     (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         if (results.length) {
           res.status(200).json(results)
@@ -37,7 +37,7 @@ router.post('/', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -45,7 +45,7 @@ router.post('/', auth, (req, res) => {
     (err, results) => {
       if (err) {
         console.log(err.message)
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         res.status(200).json({ msg: 'Bookmark created.' })
       }
@@ -60,7 +60,7 @@ router.delete('/', auth, (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -68,7 +68,7 @@ router.delete('/', auth, (req, res) => {
     [`${req.userName}`, `${req.body.pid}`],
     (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         res.status(200).json({ msg: 'Bookmark removed.' })
       }

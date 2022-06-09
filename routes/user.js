@@ -11,7 +11,7 @@ router.get('/check', (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -19,7 +19,7 @@ router.get('/check', (req, res) => {
     [`${req.query.un}`],
     (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         if (results.length) {
           res.status(400).json({ msg: 'Username already taken.' })
@@ -42,7 +42,7 @@ router.post('/signup', async (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -51,7 +51,7 @@ router.post('/signup', async (req, res) => {
     (err, results) => {
       if (err) {
         console.log(err.message)
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         jwt.sign(
           {
@@ -60,7 +60,7 @@ router.post('/signup', async (req, res) => {
           process.env.JWT_SECRET,
           (err, token) => {
             if (err) {
-              res.status(500).json({ msg: 'Server error.' })
+              res.status(500).json({ msg: err.message })
             } else {
               res
                 .status(200)
@@ -82,7 +82,7 @@ router.post('/signin', (req, res) => {
   const myConnection = mysql.createConnection(process.env.DB)
 
   myConnection.connect(err => {
-    if (err) return res.status(500).json({ msg: 'Server error.' })
+    if (err) return res.status(500).json({ msg: err.message })
   })
 
   myConnection.query(
@@ -90,7 +90,7 @@ router.post('/signin', (req, res) => {
     [`${data.userName}`],
     async (err, results) => {
       if (err) {
-        res.status(500).json({ msg: 'Server error.' })
+        res.status(500).json({ msg: err.message })
       } else {
         if (results.length) {
           const isMatch = await bcrypt.compare(data.pwrd, results[0].pwrd)
@@ -105,7 +105,7 @@ router.post('/signin', (req, res) => {
               process.env.JWT_SECRET,
               (err, token) => {
                 if (err) {
-                  res.status(500).json({ msg: 'Server error.' })
+                  res.status(500).json({ msg: err.message })
                 } else {
                   res.status(200).json({
                     token,
