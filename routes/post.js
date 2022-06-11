@@ -14,7 +14,7 @@ router.get('/auth', auth, (req, res) => {
   })
 
   myConnection.query(
-    `select p.pid, userName, name, dp, title, description, pdate, image, b.pid bm from posts p
+    `select p.pid, userName, name, dp, title, description, url, pdate, image, b.pid bm from posts p
       inner join userinfo u on p.uname=userName and p.pid<? left join bookmarks b on b.uname=? and p.pid=b.pid
       order by p.pid desc limit 10`,
     [`${req.query.id}`, `${req.userName}`],
@@ -43,7 +43,7 @@ router.get('/all', (req, res) => {
   })
 
   myConnection.query(
-    `select p.pid, userName, name, dp, title, description, pdate, image, b.pid bm from posts p
+    `select p.pid, userName, name, dp, title, description, url, pdate, image, b.pid bm from posts p
       inner join userinfo u on p.uname=userName and p.pid<? left join bookmarks b on b.uname='' and p.pid=b.pid
       order by p.pid desc limit 10`,
     [`${req.query.id}`],
@@ -72,7 +72,7 @@ router.get('/auth/following', auth, (req, res) => {
   })
 
   myConnection.query(
-    `select p.pid, userName, name, dp, title, description, pdate, image, b.pid bm from posts p
+    `select p.pid, userName, name, dp, title, description, url, pdate, image, b.pid bm from posts p
       inner join userinfo u on p.uname=userName and p.pid<? and userName in (select fname from following where uname=?)
       left join bookmarks b on b.uname=? and p.pid=b.pid order by p.pid desc limit 10`,
     [`${req.query.id}`, `${req.userName}`, `${req.userName}`],
@@ -101,7 +101,7 @@ router.get('/user/auth', auth, (req, res) => {
   })
 
   myConnection.query(
-    `select p.pid, userName, name, dp, title, description, pdate, image, b.pid bm from posts p
+    `select p.pid, userName, name, dp, title, description, url, pdate, image, b.pid bm from posts p
       inner join userinfo u on p.uname=userName and userName=? and p.pid<? left join bookmarks b on b.uname=? and
       p.pid=b.pid order by p.pid desc limit 10`,
     [`${req.query.un}`, `${req.query.id}`, `${req.userName}`],
@@ -130,7 +130,7 @@ router.get('/user/', (req, res) => {
   })
 
   myConnection.query(
-    `select p.pid, userName, name, dp, title, description, pdate, image, b.pid bm from posts p
+    `select p.pid, userName, name, dp, title, description, url, pdate, image, b.pid bm from posts p
       inner join userinfo u on p.uname=userName and userName=? and p.pid<? left join bookmarks b on b.uname='' and
       p.pid=b.pid order by p.pid desc limit 10`,
     [`${req.query.un}`, `${req.query.id}`],
@@ -159,7 +159,7 @@ router.get('/auth/one', auth, (req, res) => {
   })
 
   myConnection.query(
-    `select p.pid, userName, name, dp, title, description, pdate, image, b.pid bm from posts p
+    `select p.pid, userName, name, dp, title, description, url, pdate, image, b.pid bm from posts p
       inner join userinfo u on p.uname=userName and p.pid=? left join bookmarks b on b.uname=? and p.pid=b.pid`,
     [`${req.query.id}`, `${req.userName}`],
     (err, results) => {
@@ -171,6 +171,29 @@ router.get('/auth/one', auth, (req, res) => {
         } else {
           res.status(400).json({ msg: 'No posts available.' })
         }
+      }
+    }
+  )
+
+  myConnection.end()
+})
+
+// remove a post
+router.delete('/', auth, (req, res) => {
+  const myConnection = mysql.createConnection(process.env.DB)
+
+  myConnection.connect(err => {
+    if (err) return res.status(500).json({ msg: err.message })
+  })
+
+  myConnection.query(
+    'delete from posts where pid=?',
+    [req.body.pid],
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ msg: err.message })
+      } else {
+        res.status(200).json({ msg: 'Post deleted.' })
       }
     }
   )
